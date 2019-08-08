@@ -22,6 +22,8 @@ class Rbf(object):
         def __call__(self, input_x, input_y):
                 sp = input_x.shape
                 xa = np.asarray([input_x.flatten(), input_y.flatten()])
+                r = cdist(xa.T, self.flatten.T, 'euclidean')
+                return np.dot(self.thin_plate(r), self.B).reshape(sp)
 
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
@@ -66,7 +68,8 @@ height = bill.shape[0]
 width = bill.shape[1]
 generate_x = np.array([])
 generate_y = np.array([])
-result_x = 
+result_x = np.array([])
+result_y = np.array([])
 generate = np.zeros((height,width,2))
 for pixel in range(height*width):
     y = pixel/width
@@ -78,14 +81,19 @@ for pixel in range(height*width):
         di_y = y - hillary_shape[control_index][0]
         disp_x = np.append(disp_x, di_x)
         disp_y = np.append(disp_y, di_y)
-    fitting_x = Rbf(hillary_shape[control_index][1],
-            hillary_shape[control_index][0], disp_x)
-    fitting_y = Rbf(hillary_shape[control_index][1],
-            hillary_shape[control_index][0], disp_y)
-    generate_x = np.add(fitting_x(bill_shape[control_index][1],
-        bill_shape[control_index][0]),bill_shape[:,0])
-    generate_y = np.add(fitting_y(bill_shape[control_index][1],
-        bill_shape[control_index][0]),bill_shape[:,1])
+    fitting_x = Rbf(hillary_shape[:,1],
+            hillary_shape[:,0], disp_x)
+    fitting_y = Rbf(hillary_shape[:,1],
+            hillary_shape[:,0], disp_y)
+    #print(bill_shape[:,0].shape)
+    #print(bill_shape[:,1].shape)
+    #print(fitting_x(bill_shape[:,1],bill_shape[:,0]).shape)
+    generate_x = np.add(fitting_x(bill_shape[:,1],
+        bill_shape[:,0]),bill_shape[:,0])
+    generate_y = np.add(fitting_y(bill_shape[:,1],
+        bill_shape[:,0]),bill_shape[:,1])
+    result_x = np.append(result_x, np.mean(generate_x))
+    result_y = np.append(result_y, np.mean(generate_y))
 
 
 print("--finished")
