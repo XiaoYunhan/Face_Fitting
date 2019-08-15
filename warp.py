@@ -1,3 +1,4 @@
+# This script is to test affline transformation on certain part of image
 import cv2
 import numpy as np
 
@@ -7,6 +8,10 @@ print(rows)
 print(cols)
 
 #rotate_matrix = cv2.getRotationMatrix2D((cols/2, rows/2),90,1)
+part_rows = rows//4
+part_cols = rows//4
+
+
 
 points1 = np.float32([[100,100],[600,0],[0,600],[600,600]])
 points2 = np.float32([[0,0],[600,0],[0,600],[600,600]])
