@@ -72,17 +72,18 @@ for(i, rect) in enumerate(hillary_rects):
 
 #print(bill_shape.shape)
 #print(hillary_shape.shape)
+# shape = (68,2)
 print("--finished")
 
 print("RBF deformation ...")
 
 height = bill.shape[0]
-width = bill.shape[1]
-#generate_x = np.array([])
-#generate_y = np.array([])
-#result_x = np.array([])
-#result_y = np.array([])
-#generate = np.zeros((height,width,2))
+width = bill.shape[1] 
+generate_x = np.array([])
+generate_y = np.array([])
+result_x = np.array([])
+result_y = np.array([])
+generate = np.zeros((height,width,2))
 #for pixel in range(height*width):
 #    y = pixel/width
 #    x = pixel%width
@@ -110,12 +111,46 @@ sample_horizontal = 20
 sample_coord_x = np.linspace(start=0, stop=width, num=sample_vertical+1, dtype=int)
 sample_coord_y = np.linspace(start=0, stop=height, num=sample_horizontal+1, dtype=int)
 sample_coord = list(itertools.product(sample_coord_x, sample_coord_y))
+sample_coord_block = np.array([[[]]]).reshape(0,4,2)
+for i in range(sample_horizontal):
+    for j in range(sample_vertical):
+        insert = [sample_coord[sample_vertical*i+j],sample_coord[sample_vertica*i+j+1],
+                sample_coord[sample_vertical*(i+1)+j],
+                sample_coord[sample_vertical*(i+1)+j+1]]
+        insert = np.array(insert)
+        sample_coord_block = np.vstack((sample_coord_block,insert[None]))
+
+bill_shape_x = bill_shape[:,0]
+bill_shape_y = bill_shape[:,1]
+hillary_shape_x = hillary_shape[:,0]
+hillary_shape_y = hillary_shape[:,1]
+for i in range():
+    x = 
+    y = 
+    disp_x = np.array([])
+    disp_y = np.array([])
+    for j in range(0, 68):
+        di_x = x - 
+        di_y = y - 
+        disp_x = np.append(disp_x, di_x)
+        disp_y = np.append(disp_y, di_y)
+    fitting_x = Rbf()
+    fitting_y = Rbf()
+    fitting_x = Rbf()
+    generate_x = np.add()
+    generate_y = np.add()
+    result_x = np.append(result_x, np.mean(generate_x))
+    result_y = np.append(result_y, np.mean(generate_y))
+
+     
 
 print("--finished")
 
+print("image warping ...")
 
+for pixel in range()
 
-
+print("--finished")
 
 
 
