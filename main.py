@@ -39,10 +39,21 @@ def check_quad(pt0, pt1, pt2, pt3, pt4):
     C4 = ((pt5-pt0).dot(pt4-pt0))>0
     return C1 and C2 and C3 and C4
 
-def quad_interpolation(pt0, pt1, pt2, pt3, pt4):
+def bi_interp_ratio(pt0, pt1, pt2, pt3, pt4):
     """In this function, we pass coordinations of quad vertices pt1...4
-    pt1...4 are in clockwise
+    pt1...pt4 are in clockwise
+    return: the (u,v) value"""
+    
+    return (u,v)
+
+def quad_interpolation(pt0, pt1, pt2, pt3, pt4, tg1, tg2, tg3, tg4):
+    """In this function, we pass coordinations of quad vertices pt1...4
+    and target quad vertices tg1...4
     return: the corresponding coordination of pt0 in the original image"""
+    u, v = bi_interp_ratio(pt0, pt1, pt2, pt3, pt4)
+    x = int(pt1[0] + u*(pt2[0]-pt1[0]))
+    y = int(pt1[1] + v*(pt4[1]-pt1[1]))
+    return (x,y)
 
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
