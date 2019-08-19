@@ -39,6 +39,11 @@ def check_quad(pt0, pt1, pt2, pt3, pt4):
     C4 = ((pt5-pt0).dot(pt4-pt0))>0
     return C1 and C2 and C3 and C4
 
+def quad_interpolation(pt0, pt1, pt2, pt3, pt4):
+    """In this function, we pass coordinations of quad vertices pt1...4
+    pt1...4 are in clockwise
+    return: the corresponding coordination of pt0 in the original image"""
+
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
 hillary = cv2.imread("hillary-clinton.jpg")
@@ -120,6 +125,7 @@ for i in range(sample_horizontal):
         insert = np.array(insert)
         sample_coord_block = np.vstack((sample_coord_block,insert[None]))
 
+# RBF deformation on sampling points
 bill_shape_x = bill_shape[:,0]
 bill_shape_y = bill_shape[:,1]
 hillary_shape_x = hillary_shape[:,0]
