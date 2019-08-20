@@ -7,28 +7,41 @@ def cal_ratio(pt0,pt1,pt2,pt3,pt4):
     vertex A,B,C,D => pt1...4, point O pt0
     quadratic equation form: ax^2+bx+c=0
     """
-    a = (pt2[0]-pt1[0])*(pt3[0]-pt4[0])+(pt2[1]-pt1[1])*(pt3[1]-pt4[1])
-    b = (pt1[0]-pt2[0])*(pt0[0]-pt4[0])+(pt0[0]-pt1[0])*(pt4[0]-pt3[0])+\
-            (pt0[1]-pt1[1])*(pt4[1]-pt3[1])+(pt1[1]-pt2[1])*(pt0[1]-pt4[1])
-    c = (pt0[0]-pt1[0])*(pt0[0]-pt4[0])+(pt0[1]-pt1[1])*(pt0[1]-pt4[1])
+    a = (pt2[0]-pt1[0])*(pt3[1]-pt4[1])-(pt3[0]-pt4[0])*(pt2[1]-pt1[1])
+    b = -(pt0[0]-pt1[0])*(pt3[1]-pt4[1])-(pt2[0]-pt1[0])*(pt0[1]-pt4[1])+\
+            (pt0[0]-pt4[0])*(pt2[1]-pt1[1])+(pt3[0]-pt4[0])*(pt0[1]-pt1[1])
+    c = (pt0[0]-pt1[0])*(pt0[1]-pt4[1])-(pt0[1]-pt1[1])*(pt0[0]-pt4[0])
     
-    delta = b**2-4*a*c
-    if d<0:
-        print "Point 0 is not in this quad"
-        return false
-    elif d==0:
-        u = (-b)/(2*a)
+    if a==0:
+        u = -c/b
     else:
-        u1 = (-b+math.sqrt(delta))/(2*a)
-        u2 = (-b-math.sqrt(delta))/(2*a)
-        if u1>0:
-            u = u1
+        delta = b**2-4*a*c
+        if delta<0:
+            print("Point 0 is not in this quad")
+            return false
+        elif delta==0:
+            u = (-b)/(2*a)
         else:
-            u = u2
+            u1 = (-b+math.sqrt(delta))/(2*a)
+            u2 = (-b-math.sqrt(delta))/(2*a)
+            if u1>0:
+                u = u1
+            else:
+                u = u2
 
-    EFx = abs(pt4[0]-pt1[0]+u*(pt3[0]+pt1[0]-pt4[0]-pt2[0]))
-    EOx = abs(pt0[0]-pt1[0]+u*(pt1[0]-pt2[0]))
-    v = EOx/EFx
+    EFy = pt4[1]-pt1[1]+u*(pt3[1]+pt1[1]-pt4[1]-pt2[1])
+    EOy = pt0[1]-pt1[1]+u*(pt1[1]-pt2[1])
+    v = EOy/EFy
 
     return (u,v)
+
+pt0 = (1.5,1.75)
+pt1 = (0,2)
+pt2 = (2,2)
+pt3 = (2,0)
+pt4 = (0,0)
+
+result = cal_ratio(pt0, pt1, pt2, pt3, pt4)
+
+print(result)
 

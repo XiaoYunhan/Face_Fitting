@@ -1,88 +1,8 @@
 import numpy as np
-from scipy import linalg
-from scipy.special import xlogy
-from scipy.spatial.distance import cdist, pdist, squareform
 from imutils import face_utils
 import itertools
 import dlib
 import cv2
-import math
-
-class Rbf(object):
-    """Radial Basis Function Interpolation
-    Kernel function: Thin plate function"""
-    def thin_plate(self, r):
-        return xlogy(r**2, r)
-    def __init__(self, input_x, input_y, displacement):
-        self.x = input_x
-        self.y = input_y
-        self.d = displacement
-        self.flatten = np.asarray([np.asarray(self.x).flatten(),
-            np.asarray(self.y).flatten()])
-        self.num_of_input = self.flatten.shape[-1]
-        self.last = np.asarray(self.d).flatten()
-        self.A = self.thin_plate(squareform(pdist(self.flatten.T,'euclidean')))
-        self.B = linalg.solve(self.A, self.last)
-    def __call__(self, input_x, input_y):
-        sp = input_x.shape
-        xa = np.asarray([input_x.flatten(), input_y.flatten()])
-        r = cdist(xa.T, self.flatten.T, 'euclidean')
-        return np.dot(self.thin_plate(r), self.B).reshape(sp)
-
-def check_quad(pt0, pt1, pt2, pt3, pt4):
-    """This function check whether pt0 is in the quad composed of pt1...4
-    pt1...4 are in clockwise
-    return: True (in the quad)
-            False (not in the quad)"""
-    C1 = ((pt2-pt0).dot(pt1-pt0))>0
-    C2 = ((pt3-pt0).dot(pt2-pt0))>0
-    C3 = ((pt4-pt0).dot(pt3-pt0))>0
-    C4 = ((pt5-pt0).dot(pt4-pt0))>0
-    return C1 and C2 and C3 and C4
-
-def bi_interp_ratio(pt0, pt1, pt2, pt3, pt4):
-    """In quad ABCD (clockwise), we return the ratio
-    u = AE/AB = DF/DC (0<u<1)
-    v = EO/EF (0<v<1)
-    vertex A,B,C,D => pt1...4, point O pt0
-    quadratic equation form: ax^2+bx+c=0
-    """
-    a = (pt2[0]-pt1[0])*(pt3[1]-pt4[1])-(pt3[0]-pt4[0])*(pt2[1]-pt1[1])
-    b = -(pt0[0]-pt1[0])*(pt3[1]-pt4[1])-(pt2[0]-pt1[0])*(pt0[1]-pt4[1])+\
-            (pt0[0]-pt4[0])*(pt2[1]-pt1[1])+(pt3[0]-pt4[0])*(pt0[1]-pt1[1])
-    c = (pt0[0]-pt1[0])*(pt0[1]-pt4[1])-(pt0[1]-pt1[1])*(pt0[0]-pt4[0])
-    
-    if a==0:
-        u = -c/b
-    else:
-        delta = b**2-4*a*c
-        if delta<0:
-            print("Point 0 is not in this quad")
-            return false
-        elif delta==0:
-            u = (-b)/(2*a)
-        else:
-            u1 = (-b+math.sqrt(delta))/(2*a)
-            u2 = (-b-math.sqrt(delta))/(2*a)
-            if u1>0:
-                u = u1
-            else:
-                u = u2
-
-    EFy = pt4[1]-pt1[1]+u*(pt3[1]+pt1[1]-pt4[1]-pt2[1])
-    EOy = pt0[1]-pt1[1]+u*(pt1[1]-pt2[1])
-    v = EOy/EFy
-
-    return (u,v)
-
-def quad_interpolation(pt0, pt1, pt2, pt3, pt4, tg1, tg2, tg3, tg4):
-    """In this function, we pass coordinations of quad vertices pt1...4
-    and target quad vertices tg1...4
-    return: the corresponding coordination of pt0 in the original image"""
-    u, v = bi_interp_ratio(pt0, pt1, pt2, pt3, pt4)
-    x = int(tg1[0] + u*(tg2[0]-tg1[0]))
-    y = int(tg1[1] + v*(tg4[1]-tg1[1]))
-    return (x,y)
 
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
@@ -114,14 +34,10 @@ for(i, rect) in enumerate(bill_rects):
 for(i, rect) in enumerate(hillary_rects):
     hillary_shape = predictor(hillary_gray,rect)
     hillary_shape = face_utils.shape_to_np(hillary_shape)
-
-#print(bill_shape.shape)
-#print(hillary_shape.shape)
 # shape = (68,2)
 print("--finished")
 
-print("RBF deformation ...")
-
+print("RBF transformation ...")
 height = bill.shape[0]
 width = bill.shape[1]
 generate = np.zeros((height, width,2))
@@ -168,12 +84,13 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
 
 print("--finished")
 
-print("image warping ...")
-
-for pixel in range():
 
 
-print("--finished")
+
+
+
+
+
 
 
 
