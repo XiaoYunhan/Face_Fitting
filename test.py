@@ -1,8 +1,32 @@
 import numpy as np
+from scipy import linalg
+from scipy.special import xlogy
+from scipy.spatial.distance import cdist, pdist, squareform
 from imutils import face_utils
 import itertools
 import dlib
 import cv2
+
+class Rbf(object):
+    """Radial Basis Function Interpolation
+    Kernel function: Thin plate function"""
+    def thin_plate(self, r):
+        return xlogy(r**2, r)
+    def __init__(self, input_x, input_y, displacement):
+        self.x = input_x
+        self.y = input_y
+        self.d = displacement
+        self.flatten = np.asarray([np.asarray(self.x).flatten(),
+            np.asarray(self.y).flatten()])
+        self.num_of_input = self.flatten.shape[-1]
+        self.last = np.asarray(self.d).flatten()
+        self.A = self.thin_plate(squareform(pdist(self.flatten.T,'euclidean')))
+        self.B = linalg.solve(self.A, self.last)
+    def __call__(self, input_x, input_y):
+        sp = input_x.shape
+        xa = np.asarray([input_x.flatten(), input_y.flatten()])
+        r = cdist(xa.T, self.flatten.T, 'euclidean')
+        return np.dot(self.thin_plate(r), self.B).reshape(sp)
 
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
@@ -40,6 +64,8 @@ print("--finished")
 print("RBF transformation ...")
 height = bill.shape[0]
 width = bill.shape[1]
+generate_x = np.array([])
+generate_y = np.array([])
 generate = np.zeros((height, width,2))
 
 #divide image into quad-blocks
@@ -66,7 +92,7 @@ hillary_shape_y = hillary_shape[:,1]
 bill_shape_x = bill_shape[:,0]
 bill_shape_y = bill_shape[:,1]
 for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
-    if sample_index%21==20 or sample_index%21==0:
+    if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
         continue
     x = sample_coord[sample_index][1]
     y = sample_coord[sample_index][0]
@@ -79,12 +105,36 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
         disp_y = np.append(disp_y, di_y)
     fitting_x = Rbf(hillary_shape_y,hillary_shape_x, disp_x)
     fitting_y = Rbf(hillary_shape_y,hillary_shape_x, disp_y)
-    generate_x = np.add(fitting_x(bill_shape_y,bill_shape_x),)
-    generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),)
+    generate_x = np.add(fitting_x(bill_shape_y,bill_shape_x),bill_shape_x)
+    generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),bill_shape_y)
+    result_x = np.mean(generate_x)
+    result_y = np.mean(generate_y)
+    # change coordination of top left block
+    if sample_index>20 and sample_index%21!=0:
+        block_index = 20*(sample_index//21-1)+(x%21)-1
+        sample_coord_block_modified[block_index][0][0] = result_x
+        sample_coord_block_modified[block_index][0][1] = result_y
+    # change coordination of top right block
+    if sample_index>20 and sample_index%21!=20:
+        block_index = 20*(sample_index//21-1)+(x%21)
+        sample_coord_block_modified[block_index][1][0] = result_x
+        sample_coord_block_modified[block_index][1][1] = result_y
+    # change coordination of bottom left block
+    if sample_index<420 and sample_index%21!=0:
+        block_index = 20*(sample_index//21)+(x%21)-1
+        sample_coord_block_modified[block_index][3][0] = result_x
+        sample_coord_block_modified[block_index][3][1] = result_y
+    # change coordination of bottom right block
+    if sample_index<420 and sample_index%21!=20:
+        block_index = 20*(sample_index//21)+(x%21)
+        sample_coord_block_modified[block_index][2][0] = result_x
+        sample_coord_block_modified[block_index][2][0] = result_y
 
 print("--finished")
 
-
+print(sample_coord_block)
+print("////////////////////////////////////////")
+print(sample_coord_block_modified)
 
 
 
