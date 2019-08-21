@@ -34,10 +34,13 @@ def check_quad(pt0, pt1, pt2, pt3, pt4):
     pt1...4 are in clockwise
     return: True (in the quad)
             False (not in the quad)"""
-    C1 = ((np.array(pt2)-np.array(pt0)).dot(np.array(pt1)-np.array(pt0)))>0
-    C2 = ((np.array(pt3)-np.array(pt0)).dot(np.array(pt2)-np.array(pt0)))>0
-    C3 = ((np.array(pt4)-np.array(pt0)).dot(np.array(pt3)-np.array(pt0)))>0
-    C4 = ((np.array(pt1)-np.array(pt0)).dot(np.array(pt4)-np.array(pt0)))>0
+    C1 = (pt2[0]-pt1[0])*(pt0[1]-pt1[1])-(pt2[1]-pt1[1])*(pt0[0]-pt1[0])
+    C2 = (pt3[0]-pt2[0])*(pt0[1]-pt2[1])-(pt3[1]-pt2[1])*(pt0[0]-pt2[0])
+    C3 = (pt4[0]-pt3[0])*(pt0[1]-pt3[1])-(pt4[1]-pt3[1])*(pt0[0]-pt3[0])
+    C4 = (pt1[0]-pt4[0])*(pt0[1]-pt4[1])-(pt1[1]-pt4[1])*(pt0[0]-pt4[0])
+
+    result = (C1>0 and C2>0 and C3>0 and C4>0) or (C1<0 and C2<0 and C3<0 and C4<0)
+
     return C1 and C2 and C3 and C4
 
 def bi_interp_ratio(pt0, pt1, pt2, pt3, pt4):
