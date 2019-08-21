@@ -34,10 +34,10 @@ def check_quad(pt0, pt1, pt2, pt3, pt4):
     pt1...4 are in clockwise
     return: True (in the quad)
             False (not in the quad)"""
-    C1 = ((pt2-pt0).dot(pt1-pt0))>0
-    C2 = ((pt3-pt0).dot(pt2-pt0))>0
-    C3 = ((pt4-pt0).dot(pt3-pt0))>0
-    C4 = ((pt5-pt0).dot(pt4-pt0))>0
+    C1 = ((np.array(pt2)-np.array(pt0)).dot(np.array(pt1)-np.array(pt0)))>0
+    C2 = ((np.array(pt3)-np.array(pt0)).dot(np.array(pt2)-np.array(pt0)))>0
+    C3 = ((np.array(pt4)-np.array(pt0)).dot(np.array(pt3)-np.array(pt0)))>0
+    C4 = ((np.array(pt1)-np.array(pt0)).dot(np.array(pt4)-np.array(pt0)))>0
     return C1 and C2 and C3 and C4
 
 def bi_interp_ratio(pt0, pt1, pt2, pt3, pt4):
@@ -58,7 +58,7 @@ def bi_interp_ratio(pt0, pt1, pt2, pt3, pt4):
         delta = b**2-4*a*c
         if delta<0:
             print("Point 0 is not in this quad")
-            return false
+            return False
         elif delta==0:
             u = (-b)/(2*a)
         else:
@@ -124,7 +124,8 @@ print("RBF deformation ...")
 
 height = bill.shape[0]
 width = bill.shape[1]
-generate = np.zeros((height, width,2))
+generate_x = np.array([])
+generate_y = np.array([])
 
 #divide image into quad-blocks
 sample_vertical = 20
@@ -149,9 +150,10 @@ hillary_shape_x = hillary_shape[:,0]
 hillary_shape_y = hillary_shape[:,1]
 bill_shape_x = bill_shape[:,0]
 bill_shape_y = bill_shape[:,1]
+
 for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
-    if sample_index%21==20 or sample_index%21==0:
-        continue
+    #if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
+        #continue
     x = sample_coord[sample_index][1]
     y = sample_coord[sample_index][0]
     disp_x = np.array([])
@@ -163,17 +165,86 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
         disp_y = np.append(disp_y, di_y)
     fitting_x = Rbf(hillary_shape_y,hillary_shape_x, disp_x)
     fitting_y = Rbf(hillary_shape_y,hillary_shape_x, disp_y)
-    generate_x = np.add(fitting_x(bill_shape_y,bill_shape_x),)
-    generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),)
+    generate_x = np.add(fitting_x(bill_shape_y,bill_shape_x),bill_shape_x)
+    generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),bill_shape_y)
+    result_x = np.mean(generate_x)
+    result_y = np.mean(generate_y)
+    # change coordination in the top left block
+    if sample_index>20 and sample_index%21!=0:
+        block_index = 20*(sample_index//21-1)+(sample_index%21)-1
+        sample_coord_block_modified[block_index][2][0] = result_x
+        sample_coord_block_modified[block_index][2][1] = result_y
+    # change coordination in the top right block
+    if sample_index>20 and sample_index%21!=20:
+        block_index = 20*(sample_index//21-1)+(sample_index%21)
+        sample_coord_block_modified[block_index][3][0] = result_x
+        sample_coord_block_modified[block_index][3][1] = result_y
+    # change coordination in the bottom left block
+    if sample_index<420 and sample_index%21!=0:
+        block_index = 20*(sample_index//21)+(sample_index%21)-1
+        sample_coord_block_modified[block_index][1][0] = result_x
+        sample_coord_block_modified[block_index][1][1] = result_y
+    # change coordination in the bottom right block
+    if sample_index<420 and sample_index%21!=20:
+        block_index = 20*(sample_index//21)+(sample_index%21)
+        sample_coord_block_modified[block_index][0][0] = result_x
+        sample_coord_block_modified[block_index][0][0] = result_y
 
 print("--finished")
 
 print("image warping ...")
 
-for pixel in range():
+output_image = np.zeros(bill.shape)
+
+for pixel in range(width*height):
+    x = pixel%width
+    y = pixel//width
+    current_block = -1
+    #find the corresponding block
+    for block in range(sample_vertical*sample_horizontal):
+        if check_quad((x,y), tuple(sample_coord_block_modified[block][0]), \
+                tuple(sample_coord_block_modified[block][1]), \
+                tuple(sample_coord_block_modified[block][2]), \
+                tuple(sample_coord_block_modified[block][3])):
+            current_block = block
+            break
+
+    if current_block!=-1:
+        #find the corresponding pixel the original image
+        c_pixel = quad_interpolation((x,y), \
+                tuple(sample_coord_block_modified[current_block][0]), \
+                tuple(sample_coord_block_modified[current_block][1]), \
+                tuple(sample_coord_block_modified[current_block][2]), \
+                tuple(sample_coord_block_modified[current_block][3]), \
+                tuple(sample_coord_block[current_block][0]), \
+                tuple(sample_coord_block[current_block][1]), \
+                tuple(sample_coord_block[current_block][2]), \
+                tuple(sample_coord_block[current_block][3]))
+        #assign the corresponding RGB color to pixel
+        output_image[y][x][0] = bill[c_pixel[1]][c_pixel[0]][0]
+        output_image[y][x][1] = bill[c_pixel[1]][c_pixel[0]][1]
+        output_image[y][x][2] = bill[c_pixel[1]][c_pixel[0]][2]
 
 
 print("--finished")
+
+print("output processing ...")
+
+# processing edge of image
+
+# output as jpg image file
+cv2.imwrite("output.jpg", out_image)
+
+print("--finished")
+
+
+
+
+
+
+
+
+
 
 
 

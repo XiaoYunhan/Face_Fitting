@@ -86,14 +86,17 @@ for i in range(sample_vertical):
 #print(sample_coord_block)
 
 # RBF deformation on sampling points
-sample_coord_block_modified = sample_coord_block
+sample_coord_block_modified = np.array(sample_coord_block)
 hillary_shape_x = hillary_shape[:,0]
 hillary_shape_y = hillary_shape[:,1]
 bill_shape_x = bill_shape[:,0]
 bill_shape_y = bill_shape[:,1]
+count_x = 0
+count_y = 0
+#print(sample_coord)
 for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
-    if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
-        continue
+    #if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
+        #continue
     x = sample_coord[sample_index][1]
     y = sample_coord[sample_index][0]
     disp_x = np.array([])
@@ -109,26 +112,30 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
     generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),bill_shape_y)
     result_x = np.mean(generate_x)
     result_y = np.mean(generate_y)
-    # change coordination of top left block
+    if result_x < 0:
+        count_x = count_x+1
+    if result_y < 0:
+        count_y = count_y+1
+    # change coordination in the top left block
     if sample_index>20 and sample_index%21!=0:
-        block_index = 20*(sample_index//21-1)+(x%21)-1
-        sample_coord_block_modified[block_index][0][0] = result_x
-        sample_coord_block_modified[block_index][0][1] = result_y
-    # change coordination of top right block
+        block_index = 20*(sample_index//21-1)+(sample_index%21)-1
+        sample_coord_block_modified[block_index][2][0] = result_x
+        sample_coord_block_modified[block_index][2][1] = result_y
+    # change coordination in the top right block
     if sample_index>20 and sample_index%21!=20:
-        block_index = 20*(sample_index//21-1)+(x%21)
-        sample_coord_block_modified[block_index][1][0] = result_x
-        sample_coord_block_modified[block_index][1][1] = result_y
-    # change coordination of bottom left block
-    if sample_index<420 and sample_index%21!=0:
-        block_index = 20*(sample_index//21)+(x%21)-1
+        block_index = 20*(sample_index//21-1)+(sample_index%21)
         sample_coord_block_modified[block_index][3][0] = result_x
         sample_coord_block_modified[block_index][3][1] = result_y
-    # change coordination of bottom right block
+    # change coordination in the bottom left block
+    if sample_index<420 and sample_index%21!=0:
+        block_index = 20*(sample_index//21)+(sample_index%21)-1
+        sample_coord_block_modified[block_index][1][0] = result_x
+        sample_coord_block_modified[block_index][1][1] = result_y
+    # change coordination in the bottom right block
     if sample_index<420 and sample_index%21!=20:
-        block_index = 20*(sample_index//21)+(x%21)
-        sample_coord_block_modified[block_index][2][0] = result_x
-        sample_coord_block_modified[block_index][2][0] = result_y
+        block_index = 20*(sample_index//21)+(sample_index%21)
+        sample_coord_block_modified[block_index][0][0] = result_x
+        sample_coord_block_modified[block_index][0][0] = result_y
 
 print("--finished")
 
@@ -136,7 +143,8 @@ print(sample_coord_block)
 print("////////////////////////////////////////")
 print(sample_coord_block_modified)
 
-
+print(count_x)
+print(count_y)
 
 
 
