@@ -62,28 +62,27 @@ for(i, rect) in enumerate(hillary_rects):
 print("--finished")
 
 print("RBF transformation ...")
-height = bill.shape[0]
-width = bill.shape[1]
+height = bill.shape[0] # height = 1566
+width = bill.shape[1] # width = 1200
 generate_x = np.array([])
 generate_y = np.array([])
-generate = np.zeros((height, width,2))
 
 #divide image into quad-blocks
 sample_vertical = 20
 sample_horizontal = 20
 sample_coord_x = np.linspace(start=0, stop=width, num=sample_vertical+1, dtype=int)
 sample_coord_y = np.linspace(start=0, stop=height, num=sample_horizontal+1, dtype=int)
+# sample_coord: [(0,0),...,(0,height),...,(width,height)]
 sample_coord = list(itertools.product(sample_coord_x, sample_coord_y))
 sample_coord_block = np.array([[[]]]).reshape(0,4,2)
-for i in range(sample_vertical):
-    for j in range(sample_horizontal):
-        insert = [sample_coord[(sample_horizontal+1)*i+j],
-                sample_coord[(sample_horizontal+1)*i+j+1],
-                sample_coord[(sample_horizontal+1)*(i+1)+j+1],
-                sample_coord[(sample_horizontal+1)*(i+1)+j]]
+for i in range(sample_horizontal):
+    for j in range(sample_vertical):
+        insert = [sample_coord[(sample_vertical+1)*i+j],
+                sample_coord[(sample_vertical+1)*(i+1)+j],
+                sample_coord[(sample_vertical+1)*(i+1)+j+1],
+                sample_coord[(sample_vertical+1)*i+j+1]]
         insert = np.array(insert)
         sample_coord_block = np.vstack((sample_coord_block,insert[None]))
-#print(sample_coord_block)
 
 # RBF deformation on sampling points
 sample_coord_block_modified = np.array(sample_coord_block)
@@ -91,19 +90,19 @@ hillary_shape_x = hillary_shape[:,0]
 hillary_shape_y = hillary_shape[:,1]
 bill_shape_x = bill_shape[:,0]
 bill_shape_y = bill_shape[:,1]
-count_x = 0
-count_y = 0
 #print(sample_coord)
+#print(bill_shape)
+
 for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
     #if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
         #continue
-    x = sample_coord[sample_index][1]
-    y = sample_coord[sample_index][0]
+    x = sample_coord[sample_index][0]
+    y = sample_coord[sample_index][1]
     disp_x = np.array([])
     disp_y = np.array([])
     for control_index in range(68):
-        di_x = x - hillary_shape[control_index][1]
-        di_y = y - hillary_shape[control_index][0]
+        di_x = x - hillary_shape[control_index][0]
+        di_y = y - hillary_shape[control_index][1]
         disp_x = np.append(disp_x, di_x)
         disp_y = np.append(disp_y, di_y)
     fitting_x = Rbf(hillary_shape_y,hillary_shape_x, disp_x)
@@ -112,23 +111,21 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
     generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),bill_shape_y)
     result_x = np.mean(generate_x)
     result_y = np.mean(generate_y)
-    if result_x < 0:
-        count_x = count_x+1
-    if result_y < 0:
-        count_y = count_y+1
+    #print(result_x, result_y)
+
     # change coordination in the top left block
     if sample_index>20 and sample_index%21!=0:
         block_index = 20*(sample_index//21-1)+(sample_index%21)-1
         sample_coord_block_modified[block_index][2][0] = result_x
         sample_coord_block_modified[block_index][2][1] = result_y
     # change coordination in the top right block
-    if sample_index>20 and sample_index%21!=20:
-        block_index = 20*(sample_index//21-1)+(sample_index%21)
+    if sample_index<420 and sample_index%21!=0:
+        block_index = 20*(sample_index//21)+(sample_index%21)-1
         sample_coord_block_modified[block_index][3][0] = result_x
         sample_coord_block_modified[block_index][3][1] = result_y
     # change coordination in the bottom left block
-    if sample_index<420 and sample_index%21!=0:
-        block_index = 20*(sample_index//21)+(sample_index%21)-1
+    if sample_index>20 and sample_index%21!=20:
+        block_index = 20*(sample_index//21-1)+(sample_index%21)
         sample_coord_block_modified[block_index][1][0] = result_x
         sample_coord_block_modified[block_index][1][1] = result_y
     # change coordination in the bottom right block
@@ -141,10 +138,11 @@ print("--finished")
 
 print(sample_coord_block)
 print("////////////////////////////////////////")
+np.set_printoptions(suppress=True)
 print(sample_coord_block_modified)
 
-print(count_x)
-print(count_y)
+#print(count_x)
+#print(count_y)
 
 
 
