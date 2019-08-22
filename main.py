@@ -242,7 +242,7 @@ print("output processing ...")
 # processing edge of image
 
 # output as jpg image file
-cv2.imwrite("output.jpg", out_image)
+cv2.imwrite("output.jpg", output_image)
 
 print("--finished")
 
