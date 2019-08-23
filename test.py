@@ -6,6 +6,27 @@ from imutils import face_utils
 import itertools
 import dlib
 import cv2
+import math
+
+def position(A, B, C, da, db, dc):
+    """This function calculate the position of point P
+    with coordination of A, B, C 
+    and their distance between P: da, db, dc
+    return: <tuple>(Px, Py)"""
+    A11 = 2*A[0] - 2*B[0]
+    A12 = 2*A[1] - 2*B[1]
+    A21 = 2*A[0] - 2*C[0]
+    A22 = 2*A[1] - 2*C[1]
+    B01 = A[0]**2+A[1]**2-B[0]**2-B[1]**2+db**2-da**2
+    B02 = A[0]**2+A[1]**2-C[0]**2-C[0]**2+dc**2-da**2
+
+    AM = np.array([[A11,A12],[A21,A22]])
+    BM = np.array([[B01],[B02]])
+    #print("AM: ", AM)
+    #print("BM: ", BM)
+    CM = linalg.solve(AM,BM)
+    #print(CM)
+    return (CM[0],CM[1])
 
 class Rbf(object):
     """Radial Basis Function Interpolation
@@ -27,6 +48,8 @@ class Rbf(object):
         xa = np.asarray([input_x.flatten(), input_y.flatten()])
         r = cdist(xa.T, self.flatten.T, 'euclidean')
         return np.dot(self.thin_plate(r), self.B).reshape(sp)
+
+def gradient_descent():
 
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
@@ -64,8 +87,7 @@ print("--finished")
 print("RBF transformation ...")
 height = bill.shape[0] # height = 1566
 width = bill.shape[1] # width = 1200
-generate_x = np.array([])
-generate_y = np.array([])
+
 
 #divide image into quad-blocks
 sample_vertical = 20
@@ -92,23 +114,32 @@ bill_shape_x = bill_shape[:,0]
 bill_shape_y = bill_shape[:,1]
 #print(sample_coord)
 #print(bill_shape)
+generate = np.array([])
+generate_x = np.array([])
+generate_y = np.array([])
+check = True
 
 for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
     #if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
         #continue
     x = sample_coord[sample_index][0]
     y = sample_coord[sample_index][1]
-    disp_x = np.array([])
-    disp_y = np.array([])
+    dist = np.array([])
     for control_index in range(68):
         di_x = x - hillary_shape[control_index][0]
         di_y = y - hillary_shape[control_index][1]
-        disp_x = np.append(disp_x, di_x)
-        disp_y = np.append(disp_y, di_y)
-    fitting_x = Rbf(hillary_shape_y,hillary_shape_x, disp_x)
-    fitting_y = Rbf(hillary_shape_y,hillary_shape_x, disp_y)
-    generate_x = np.add(fitting_x(bill_shape_y,bill_shape_x),bill_shape_x)
-    generate_y = np.add(fitting_y(bill_shape_y,bill_shape_y),bill_shape_y)
+        distance = math.sqrt(di_x**2+di_y**2)
+        dist = np.append(dist, distance)
+    fitting = Rbf(hillary_shape_y,hillary_shape_x, dist)
+    generate = fitting(bill_shape_y, bill_shape_x)
+    for i in range(22):
+        P = position(tuple(bill_shape[i]),tuple(bill_shape[22+i]), \
+                tuple(bill_shape[44+i]),generate[i],generate[22+i],generate[44+i])
+        generate_x = np.append(generate_x,P[0])
+        generate_y = np.append(generate_y,P[1])
+    if check:
+        print(generate)
+        check = False
     result_x = np.mean(generate_x)
     result_y = np.mean(generate_y)
     #print(result_x, result_y)
@@ -136,10 +167,10 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
 
 print("--finished")
 
-print(sample_coord_block)
-print("////////////////////////////////////////")
-np.set_printoptions(suppress=True)
-print(sample_coord_block_modified)
+#print(sample_coord_block)
+#print("////////////////////////////////////////")
+#np.set_printoptions(suppress=True)
+#print(sample_coord_block_modified)
 
 #print(count_x)
 #print(count_y)
