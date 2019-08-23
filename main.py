@@ -8,6 +8,26 @@ import dlib
 import cv2
 import math
 
+def position(A, B, C, da, db, dc):
+    """This function calculate the position of point P
+    with coordination of A, B, C
+    and their distance between P: da, db, dc
+    return: <tuple>(Px, Py)"""
+    A11 = 2*A[0] - 2*B[0]
+    A12 = 2*A[1] - 2*B[1]
+    A21 = 2*A[0] - 2*C[0]
+    A22 = 2*A[1] - 2*C[1]
+    B01 = A[0]**2+A[1]**2-B[0]**2-B[1]**2+db**2-da**2
+    B02 = A[0]**2+A[1]**2-C[0]**2-C[0]**2+dc**2-da**2
+
+    AM = np.array([[A11,A12],[A21,A22]])
+    BM = np.array([[B01],[B02]])
+    #print("AM: ", AM)
+    #print("BM: ", BM)
+    CM = linalg.solve(AM,BM)
+    #print(CM)
+    return (CM[0],CM[1])
+
 class Rbf(object):
     """Radial Basis Function Interpolation
     Kernel function: Thin plate function"""
