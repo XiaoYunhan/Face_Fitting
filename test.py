@@ -51,6 +51,7 @@ class Rbf(object):
 
 def gradient_descent():
 
+
 print("preprocessing ...")
 bill = cv2.imread("bill-clinton.jpg")
 hillary = cv2.imread("hillary-clinton.jpg")
