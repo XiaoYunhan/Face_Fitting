@@ -49,7 +49,7 @@ class Rbf(object):
         r = cdist(xa.T, self.flatten.T, 'euclidean')
         return np.dot(self.thin_plate(r), self.B).reshape(sp)
 
-def gradient_descent():
+#def gradient_descent():
 
 
 print("preprocessing ...")
@@ -133,38 +133,41 @@ for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
         dist = np.append(dist, distance)
     fitting = Rbf(hillary_shape_y,hillary_shape_x, dist)
     generate = fitting(bill_shape_y, bill_shape_x)
-    for i in range(22):
-        P = position(tuple(bill_shape[i]),tuple(bill_shape[22+i]), \
-                tuple(bill_shape[44+i]),generate[i],generate[22+i],generate[44+i])
-        generate_x = np.append(generate_x,P[0])
-        generate_y = np.append(generate_y,P[1])
-    if check:
-        print(generate)
-        check = False
-    result_x = np.mean(generate_x)
-    result_y = np.mean(generate_y)
+    #for i in range(22):
+        #P = position(tuple(bill_shape[i]),tuple(bill_shape[3*i]), \
+                #tuple(bill_shape[3*i+1]),generate[i],generate[22+i],generate[44+i])
+        #generate_x = np.append(generate_x,P[0])
+        #generate_y = np.append(generate_y,P[1])
+
+    result = gradient_descent(bill_shape, generate)
+
+    #if check:
+        #print(generate)
+        #check = False
+    #result_x = np.mean(generate_x)
+    #result_y = np.mean(generate_y)
     #print(result_x, result_y)
 
     # change coordination in the top left block
     if sample_index>20 and sample_index%21!=0:
         block_index = 20*(sample_index//21-1)+(sample_index%21)-1
-        sample_coord_block_modified[block_index][2][0] = result_x
-        sample_coord_block_modified[block_index][2][1] = result_y
+        sample_coord_block_modified[block_index][2][0] = result[0]
+        sample_coord_block_modified[block_index][2][1] = result[1]
     # change coordination in the top right block
     if sample_index<420 and sample_index%21!=0:
         block_index = 20*(sample_index//21)+(sample_index%21)-1
-        sample_coord_block_modified[block_index][3][0] = result_x
-        sample_coord_block_modified[block_index][3][1] = result_y
+        sample_coord_block_modified[block_index][3][0] = result[0]
+        sample_coord_block_modified[block_index][3][1] = result[1]
     # change coordination in the bottom left block
     if sample_index>20 and sample_index%21!=20:
         block_index = 20*(sample_index//21-1)+(sample_index%21)
-        sample_coord_block_modified[block_index][1][0] = result_x
-        sample_coord_block_modified[block_index][1][1] = result_y
+        sample_coord_block_modified[block_index][1][0] = result[0]
+        sample_coord_block_modified[block_index][1][1] = result[1]
     # change coordination in the bottom right block
     if sample_index<420 and sample_index%21!=20:
         block_index = 20*(sample_index//21)+(sample_index%21)
-        sample_coord_block_modified[block_index][0][0] = result_x
-        sample_coord_block_modified[block_index][0][0] = result_y
+        sample_coord_block_modified[block_index][0][0] = result[0]
+        sample_coord_block_modified[block_index][0][0] = result[1]
 
 print("--finished")
 

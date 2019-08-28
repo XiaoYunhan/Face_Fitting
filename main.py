@@ -178,13 +178,11 @@ bill_shape_y = bill_shape[:,1]
 for sample_index in range((sample_vertical+1)*(sample_horizontal+1)):
     #if sample_index<22 or sample_index%21==20 or sample_index%21==0 or sample_index>420:
         #continue
-    x = sample_coord[sample_index][0]
-    y = sample_coord[sample_index][1]
     disp_x = np.array([])
     disp_y = np.array([])
     for control_index in range(68):
-        di_x = x - hillary_shape[control_index][0]
-        di_y = y - hillary_shape[control_index][1]
+        di_x = sample_coord[sample_index][0] - hillary_shape_x[control_index]
+        di_y = sample_coord[sample_index][1] - hillary_shape_y[control_index]
         disp_x = np.append(disp_x, di_x)
         disp_y = np.append(disp_y, di_y)
     fitting_x = Rbf(hillary_shape_y,hillary_shape_x, disp_x)
